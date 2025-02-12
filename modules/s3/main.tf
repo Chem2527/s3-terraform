@@ -1,18 +1,37 @@
-# Generate a unique bucket name
+provider "aws" {
+  region = "us-east-1"
+}
+
+locals {
+  transitions = [
+    {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    },
+    {
+      days          = 60
+      storage_class = "GLACIER"
+    }
+  ]
+
+  cors_methods = ["GET", "POST", "PUT"]
+}
+
 resource "random_id" "unique" {
   byte_length = 8
 }
 
 # S3 Bucket resource
 resource "aws_s3_bucket" "example" {
-  bucket            = "${var.bucket_prefix}-${random_id.unique.hex}"
-  force_destroy     = var.force_destroy
+  bucket              = "${var.bucket_prefix}-${random_id.unique.hex}"
+  force_destroy       = var.force_destroy
   object_lock_enabled = var.object_lock_enabled
-  tags              = var.tags
+  tags                = var.tags
 }
 
 # Object Lock Configuration for S3 bucket
 resource "aws_s3_bucket_object_lock_configuration" "example" {
+  count  = var.object_lock_enabled ? 1 : 0
   bucket = aws_s3_bucket.example.id
 
   rule {
@@ -25,21 +44,11 @@ resource "aws_s3_bucket_object_lock_configuration" "example" {
 
 # Versioning Configuration for the S3 bucket
 resource "aws_s3_bucket_versioning" "example" {
-  bucket = aws_s3_bucket.example.bucket
+  bucket = aws_s3_bucket.example.id
 
   versioning_configuration {
     status = var.versioning_enabled ? "Enabled" : "Suspended"
   }
-}
-
-# Local variables for lifecycle, CORS, and transitions
-locals {
-  transitions   = [
-    { days = 30, storage_class = "INTELLIGENT_TIERING" },
-    { days = 90, storage_class = "GLACIER" },
-    { days = 180, storage_class = "DEEP_ARCHIVE" }
-  ]
-  cors_methods  = ["GET", "POST", "PUT", "DELETE"]
 }
 
 # S3 Lifecycle Configuration
@@ -58,8 +67,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "example" {
       }
     }
 
-    expiration {
-      days = var.expiration_days
+    dynamic "expiration" {
+      for_each = var.enable_expiration && var.expiration_days != "never" ? [1] : []
+      content {
+        days = var.expiration_days != "never" ? var.expiration_days : null
+      }
     }
 
     abort_incomplete_multipart_upload {
@@ -70,6 +82,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "example" {
 
 # S3 CORS Configuration
 resource "aws_s3_bucket_cors_configuration" "example" {
+  count  = var.enable_cors ? 1 : 0
   bucket = aws_s3_bucket.example.id
 
   cors_rule {
@@ -92,10 +105,10 @@ resource "aws_s3_bucket_ownership_controls" "example" {
 
 # Static Website Hosting Configuration for the S3 Bucket
 resource "aws_s3_bucket_website_configuration" "example" {
+  count  = var.enable_website ? 1 : 0
   bucket = aws_s3_bucket.example.id
-  count  = var.website_enabled ? 1 : 0
 
   index_document {
-    suffix = "index.html"
+    suffix = var.index_document
   }
 }
