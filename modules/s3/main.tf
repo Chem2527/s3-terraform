@@ -87,7 +87,7 @@ resource "aws_s3_bucket_cors_configuration" "example" {
 
   cors_rule {
     allowed_methods = local.cors_methods
-    allowed_origins = var.allowed_origins
+    allowed_origins = var.enable_cors && length(var.allowed_origins) > 0 ? var.allowed_origins : ["*"]
     allowed_headers = ["Authorization", "Content-Type", "x-amz-date", "x-amz-security-token"]
     expose_headers  = ["ETag"]
     max_age_seconds = 3600
