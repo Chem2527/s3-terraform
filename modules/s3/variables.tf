@@ -6,21 +6,11 @@ variable "bucket_prefix" {
 variable "force_destroy" {
   description = "Whether to force destroy the bucket"
   type        = bool
-
-  validation {
-    condition     = var.force_destroy == true || var.force_destroy == false
-    error_message = "Please enter 'true' or 'false'."
-  }
 }
 
 variable "object_lock_enabled" {
   description = "Whether object lock is enabled for the bucket"
   type        = bool
-
-  validation {
-    condition     = var.object_lock_enabled == true || var.object_lock_enabled == false
-    error_message = "Please enter 'true' or 'false'."
-  }
 }
 
 variable "tags" {
@@ -51,21 +41,11 @@ variable "lock_days" {
 variable "versioning_enabled" {
   description = "Whether versioning is enabled for the bucket"
   type        = bool
-
-  validation {
-    condition     = var.versioning_enabled == true || var.versioning_enabled == false
-    error_message = "Please enter 'true' or 'false'."
-  }
 }
 
 variable "enable_expiration" {
   description = "Whether to enable expiration for the bucket"
   type        = bool
-
-  validation {
-    condition     = var.enable_expiration == true || var.enable_expiration == false
-    error_message = "Please enter 'true' or 'false'."
-  }
 }
 
 variable "expiration_days" {
@@ -81,21 +61,12 @@ variable "expiration_days" {
 variable "enable_cors" {
   description = "Whether to enable CORS for the bucket"
   type        = bool
-
-  validation {
-    condition     = var.enable_cors == true || var.enable_cors == false
-    error_message = "Please enter 'true' or 'false'."
-  }
 }
 
 variable "allowed_origins" {
   description = "A list of origins allowed for CORS"
   type        = list(string)
-
-  validation {
-    condition     = var.enable_cors == false || length(var.allowed_origins) > 0
-    error_message = "Allowed origins must be specified when CORS is enabled."
-  }
+  default     = []
 }
 
 variable "object_ownership" {
@@ -111,11 +82,6 @@ variable "object_ownership" {
 variable "enable_website" {
   description = "Whether to enable website hosting for the bucket"
   type        = bool
-
-  validation {
-    condition     = var.enable_website == true || var.enable_website == false
-    error_message = "Please enter 'true' or 'false'."
-  }
 }
 
 variable "index_document" {
