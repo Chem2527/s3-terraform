@@ -15,8 +15,10 @@ output "bucket_url" {
 
 output "versioning_status" {
   description = "The versioning status of the S3 bucket"
-  value       = aws_s3_bucket_versioning.example.versioning_configuration[0].status
+  value = length(aws_s3_bucket_versioning.example) > 0 ? aws_s3_bucket_versioning.example[0].versioning_configuration[0].status : "Not enabled"
 }
+
+
 
 output "object_lock_configuration" {
   description = "The Object Lock configuration for the S3 bucket"
