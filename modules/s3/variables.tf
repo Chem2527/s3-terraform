@@ -82,9 +82,21 @@ variable "object_ownership" {
 variable "enable_website" {
   description = "Whether to enable website hosting for the bucket"
   type        = bool
+
+  validation {
+    condition     = var.enable_website == true || var.enable_website == false
+    error_message = "Please enter 'true' or 'false'."
+  }
 }
 
 variable "index_document" {
   description = "The index document for the website"
   type        = string
+  default     = "index.html" # Set a default, so it's not prompted when disabled
+
+  # Only require index_document if enable_website is true
+  validation {
+    condition     = var.enable_website == false || (var.enable_website == true && length(var.index_document) > 0)
+    error_message = "Please specify an index document when website hosting is enabled."
+  }
 }
