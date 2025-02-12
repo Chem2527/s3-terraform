@@ -1,7 +1,12 @@
 provider "aws" {
   region = "us-east-1"
+  
 }
-
+# Generate a random ID for the bucket name suffix
+resource "random_id" "unique" {
+  byte_length = 8
+}
+# Define local variables
 locals {
   transitions = [
     {
@@ -15,10 +20,6 @@ locals {
   ]
 
   cors_methods = ["GET", "POST", "PUT"]
-}
-
-resource "random_id" "unique" {
-  byte_length = 8
 }
 
 # S3 Bucket resource
@@ -44,10 +45,11 @@ resource "aws_s3_bucket_object_lock_configuration" "example" {
 
 # Versioning Configuration for the S3 bucket
 resource "aws_s3_bucket_versioning" "example" {
+  count  = var.object_lock_enabled ? 1 : 0  # Enable only when Object Lock is enabled
   bucket = aws_s3_bucket.example.id
 
   versioning_configuration {
-    status = var.versioning_enabled ? "Enabled" : "Suspended"
+    status = "Enabled"
   }
 }
 
